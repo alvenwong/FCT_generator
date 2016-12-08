@@ -176,10 +176,11 @@ int read_request(const int fd)
 	count = read(fd, payload, PAYLOAD_SIZE);
 	if (count == -1) {
 		if (errno != EAGAIN && errno != EINTR) {
-			perror("read error");
+			perror ("read error");
 			error = count;
-		}			 
+		}
 	} else if (count == 0) {
+		perror("The connection has been closed by server.\n");
 		error = count;
 	} else {
 		deserialize_payload(payload, &req);

@@ -81,8 +81,6 @@ void epoll_loop(const int efd)
 }
 
 
-
-
 void epoll_client()
 {
 	int efd;

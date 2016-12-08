@@ -34,6 +34,7 @@ static void epoll_server(const unsigned int port)
 					accept_epoll_events(efd, sfd);
 			} else if ( events[i].events & EPOLLIN ) {
 				flow_size = read_request(fd);
+				printf("fd: %d, in flow size: %d\n", fd, flow_size);
 				if (flow_size <= 0) {
 					delete_epoll_event(efd, fd);
 					close(fd);
