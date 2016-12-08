@@ -2,6 +2,20 @@
 #include "client.h"
 
 
+int get_flow_size()
+{
+	return gen_random_cdf(&req_size_dist);
+}
+
+
+void del_flow(const int efd, const int fd)
+{
+	delete_epoll_event(efd, fd);
+	close(fd);
+	del_flow_time_entry(&time_table, fd);
+}
+
+
 void epoll_loop(const int efd)
 {
 	struct epoll_event* events;
@@ -24,36 +38,36 @@ void epoll_loop(const int efd)
 			fd = events[i].data.fd;
 			if ((events[i].events & EPOLLERR) ||
 				(events[i].events & EPOLLHUP)) {
-				delete_epoll_event(efd, fd);
+				del_flow(efd, fd);
 				continue;
 			} else if (events[i].events & EPOLLOUT) {
 				int error;
 				if (active_flows < concurrent_flows) {	
-					//flow_size = get_flow_size();
-					flow_size = 10240;	
+					flow_size = get_flow_size();
 					flows_size[fd] = flow_size;
 					write_request(fd, flow_size);
 					if ((error = modify_epoll_event(efd, fd, EPOLLIN)) < 0) {
 						perror ("modify_epoll_event");
-						delete_epoll_event(efd, fd);
-						close(fd);
+						del_flow(efd, fd);
 					} else {
 						active_flows += 1;
+						add_flow_time_entry(&time_table, fd, flow_size);
 					}
 				} else {
 					if ((error = modify_epoll_event(efd, fd, EPOLLOUT)) < 0) {
 						perror ("modify_epoll_event");
-						delete_epoll_event(efd, fd);
-						close(fd);
+						del_flow(efd, fd);
 					}
 				}
 			} else if (events[i].events & EPOLLIN) {
 				int count;
 				flow_size = flows_size[fd];
 				count = read_responce(fd, flow_size);
+				printf("responce size: %d\n", count);
 				if (count != flow_size) {
 					//printf("responce is smaller than expected!\n");
 				} else {
+					set_resp_time(&time_table, fd);
 				}
 				active_flows -= 1;
 				left_flows -= 1;
@@ -67,13 +81,6 @@ void epoll_loop(const int efd)
 }
 
 
-void get_conn(struct connection_four_tuples *conn, struct socket_configs* socket_conf)
-{
-	strcpy(conn->saddr, "172.16.32.203");
-	strcpy(conn->daddr, socket_conf->dst_hosts[0].ip);
-	conn->sport = 0;
-	conn->dport = socket_conf->dst_hosts[0].port;
-}
 
 
 void epoll_client()
@@ -87,32 +94,25 @@ void epoll_client()
 }
 
 
-
-void print_statistic()
-{
-	return;
-
-}
-
 void cleanup()
 {
-	return;
+	del_flow_time_table(&time_table);
 }
 
 
 
 int main(int argc, char *argv[])
 {
-	get_configs(argc, argv, &flow_conf, &socket_conf);
+	get_configs(argc, argv, &flow_conf, &socket_conf, &conn);
 	get_cdf(&req_size_dist, cdf_filename);
-	get_conn(&conn, &socket_conf);
+	init_flow_time_table(&time_table, flow_conf.flows_num + BACKUP);
 
 	print_cdf(&req_size_dist);
 	print_flow_configs(&flow_conf);
 	print_socket_configs(&socket_conf);
 
 	epoll_client();	
-	print_statistic();
+	print_statistics(&time_table);
 	cleanup();
 
 	return 0;

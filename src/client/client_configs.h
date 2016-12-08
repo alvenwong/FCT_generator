@@ -17,6 +17,8 @@ struct flow_configs {
 	unsigned int concurrent_flows;
 	char dev[DEV_NAME_LEN];
 	bool verbose;
+	char server[NI_MAXHOST];
+	unsigned int port;
 };
 
 struct dst_configs {
@@ -31,13 +33,14 @@ struct socket_configs {
 };
 
 
-void get_configs(int argc, char *argv[], struct flow_configs* flow_conf, struct socket_configs* socket_conf);
+void get_configs(int argc, char *argv[], struct flow_configs* flow_conf, struct socket_configs* socket_conf, struct connection_four_tuples* conn);
 void get_flow_configs(int argc, char *argv[], struct flow_configs* flow_conf);
-void get_socket_configs(struct socket_configs* socket_conf, const char* dev);
+void get_socket_configs(struct socket_configs* socket_conf, struct flow_configs* flow_conf);
+void get_conn(struct connection_four_tuples *conn, struct socket_configs* socket_conf, const int index);
 void init_flow_configs(struct flow_configs* conf);
 void init_socket_configs(struct socket_configs* socket_conf);
-void read_socket_configs(struct socket_configs* socket_conf, const char* dev);
-int get_dst_info(struct dst_configs dst_conf[]);
+void read_socket_configs(struct socket_configs* socket_conf, struct flow_configs* flow_conf);
+int get_dst_info(struct dst_configs dst_conf[], struct flow_configs* flow_conf);
 void print_socket_configs(struct socket_configs* socket_conf);
 void print_usage();
 void read_args(int argc, char *argv[], struct flow_configs *conf);

@@ -1,10 +1,20 @@
 #include "client_configs.h"
 
 
-void get_configs(int argc, char *argv[], struct flow_configs* flow_conf, struct socket_configs* socket_conf)
+void get_configs(int argc, char *argv[], struct flow_configs* flow_conf, struct socket_configs* socket_conf, struct connection_four_tuples* conn)
 {
 	get_flow_configs(argc, argv, flow_conf);
-	get_socket_configs(socket_conf, flow_conf->dev);
+	get_socket_configs(socket_conf, flow_conf);
+	get_conn(conn, socket_conf, 0);
+}
+
+
+void get_conn(struct connection_four_tuples *conn, struct socket_configs* socket_conf, const int index)
+{
+	strcpy(conn->saddr, socket_conf->sips.ips[index]);
+	strcpy(conn->daddr, socket_conf->dst_hosts[0].ip);
+	conn->sport = 0;
+	conn->dport = socket_conf->dst_hosts[0].port;
 }
 
 
@@ -15,10 +25,10 @@ void get_flow_configs(int argc, char *argv[], struct flow_configs* flow_conf)
 }
 
 
-void get_socket_configs(struct socket_configs* socket_conf, const char* dev)
+void get_socket_configs(struct socket_configs* socket_conf, struct flow_configs* flow_conf)
 {
 	init_socket_configs(socket_conf);
-	read_socket_configs(socket_conf, dev);
+	read_socket_configs(socket_conf, flow_conf);
 }
 
 
@@ -29,6 +39,8 @@ void init_flow_configs(struct flow_configs* conf)
 	conf->concurrent_flows = 1;
 	conf->verbose = false;
 	strcpy(conf->dev, "eth2");
+	strcpy(conf->server, "");
+	conf->port = SERVER_PORT;
 }
 
 
@@ -37,7 +49,7 @@ void read_args(int argc, char *argv[], struct flow_configs* conf)
 	int result;
 	opterr = 0;
 
-	while ((result = getopt(argc, argv, "hvn:c:i:")) != -1) {
+	while ((result = getopt(argc, argv, "hvn:c:i:s:p:")) != -1) {
 		switch (result) {
 			case 'h':
 				print_usage();
@@ -54,10 +66,20 @@ void read_args(int argc, char *argv[], struct flow_configs* conf)
 			case 'i':
 				strcpy(conf->dev, optarg);
 				break;
+			case 's':
+				strcpy(conf->server, optarg);
+				break;
+			case 'p':
+				conf->port = atoi(optarg);
+				break;
 			default:
 				print_usage();
 				break;
 		}
+	}
+	if (strcmp(conf->server, "") == 0) {
+		printf("Server ip is unset\n");
+		exit(0);
 	}
 }
 
@@ -68,26 +90,26 @@ void init_socket_configs(struct socket_configs* socket_conf)
 }
 
 
-void read_socket_configs(struct socket_configs* socket_conf, const char* dev)
+void read_socket_configs(struct socket_configs* socket_conf, struct flow_configs* flow_conf)
 {
 	int ips_num;
 
 	init_ips(&(socket_conf->sips));
-	if ((ips_num = get_src_ips(&(socket_conf->sips), dev)) <= 0) {
+	if ((ips_num = get_src_ips(&(socket_conf->sips), flow_conf->dev)) <= 0) {
 		printf("Source IPs are unavailable.\n");
 		exit(0);
 	}
-	if ((socket_conf->dst_num = get_dst_info(socket_conf->dst_hosts)) <= 0) {
+	if ((socket_conf->dst_num = get_dst_info(socket_conf->dst_hosts, flow_conf)) <= 0) {
 		printf("Servers are unavailable.\n");
 		exit(0);
 	}
 }
 
 
-int get_dst_info(struct dst_configs dst_conf[])
+int get_dst_info(struct dst_configs dst_conf[], struct flow_configs* flow_conf)
 {
-	strcpy(dst_conf[0].ip, "172.16.32.207");
-	dst_conf[0].port = SERVER_PORT;
+	strcpy(dst_conf[0].ip, flow_conf->server);
+	dst_conf[0].port = flow_conf->port;
 	return 1;
 }
 
@@ -127,4 +149,6 @@ void print_usage()
 	printf("-v              give more detailed output (verbose)\n");
 	printf("-i              device name\n");
 	printf("-h              display help information\n");
+	printf("-s              server ip\n");
+	printf("-p              server port\n");
 }
