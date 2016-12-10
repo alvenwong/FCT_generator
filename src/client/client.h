@@ -9,6 +9,7 @@
 #include <ifaddrs.h>
 #include <assert.h>
 #include <errno.h>
+#include <time.h>
 
 #include "../common/epoll.h"
 #include "../common/network.h"
@@ -34,6 +35,8 @@ unsigned int flows_size[MAX_FLOWS];
 
 bool verbose_mode = false;
 char cdf_filename[] = "conf/cdf"; 
+char result_filename_base[] = "result/flowsize_fct_";
+char result_filename[FILENAME_SIZE];
 
 
 #endif

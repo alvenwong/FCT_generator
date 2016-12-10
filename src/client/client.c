@@ -60,23 +60,26 @@ void epoll_loop(const int efd)
 					}
 				}
 			} else if (events[i].events & EPOLLIN) {
-				int count;
+				int count, error;
 				flow_size = flows_size[fd];
 				count = read_responce(fd, flow_size);
-				printf("responce size: %d\n", count);
 				if (count != flow_size) {
-					//printf("responce is smaller than expected!\n");
+					printf("responce %d is inconsistent with expected %d!\n", count, flow_size);
 				} else {
 					set_resp_time(&time_table, fd);
 				}
 				active_flows -= 1;
 				left_flows -= 1;
+				if ((error = modify_epoll_event(efd, fd, EPOLLIN)) < 0) {
+					perror ("modify_epoll_event");
+					del_flow(efd, fd);
+				}
 				delete_epoll_event(efd, fd);
 				close(fd);
 			}
 		}
 	}
-	
+
 	free(events);
 }
 
@@ -97,7 +100,11 @@ void cleanup()
 	del_flow_time_table(&time_table);
 }
 
-
+void string_joint(char* str1, char* str2, char* dest)
+{
+	strcpy(dest, str1);
+	strcat(dest, str2);
+}
 
 int main(int argc, char *argv[])
 {
@@ -110,7 +117,9 @@ int main(int argc, char *argv[])
 	print_socket_configs(&socket_conf);
 
 	epoll_client();	
-	print_statistics(&time_table);
+	
+	string_joint(result_filename_base, flow_conf.result_file, result_filename);
+	print_statistics(&time_table, result_filename);
 	cleanup();
 
 	return 0;

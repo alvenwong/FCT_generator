@@ -41,6 +41,7 @@ void init_flow_configs(struct flow_configs* conf)
 	strcpy(conf->dev, "eth2");
 	strcpy(conf->server, "");
 	conf->port = SERVER_PORT;
+	strcpy(conf->result_file, "0");
 }
 
 
@@ -49,7 +50,7 @@ void read_args(int argc, char *argv[], struct flow_configs* conf)
 	int result;
 	opterr = 0;
 
-	while ((result = getopt(argc, argv, "hvn:c:i:s:p:")) != -1) {
+	while ((result = getopt(argc, argv, "hvn:c:i:s:p:f:")) != -1) {
 		switch (result) {
 			case 'h':
 				print_usage();
@@ -71,6 +72,9 @@ void read_args(int argc, char *argv[], struct flow_configs* conf)
 				break;
 			case 'p':
 				conf->port = atoi(optarg);
+				break;
+			case 'f':
+				strcpy(conf->result_file, optarg);
 				break;
 			default:
 				print_usage();
@@ -118,20 +122,18 @@ void print_socket_configs(struct socket_configs* socket_conf)
 {
 	int d;
 
-	print_split();
+	print_split("Server information");
 	print_src_ips(&(socket_conf->sips));
 	for (d=0; d<socket_conf->dst_num; d++) {
-		printf("server:\n%s %u\n", 
-				socket_conf->dst_hosts[d].ip,
-				socket_conf->dst_hosts[d].port);
+		printf("Server ip: %s\n", socket_conf->dst_hosts[d].ip);
+		printf("Server port: %d\n", socket_conf->dst_hosts[d].port);
 	}
-	print_split();
 }
 
 
 void print_flow_configs(struct flow_configs *conf)
 {
-	printf("Client configuration: \n");
+	print_split("Client configuration");
 	printf("Flows: %u\n", conf->flows_num);
 	printf("Concurrent flows: %u\n", conf->concurrent_flows);
 	printf("Device name: %s\n", conf->dev);

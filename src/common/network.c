@@ -79,7 +79,7 @@ void print_src_ips(const struct src_ips* ips)
 	int i;
 	int ips_num = ips->ips_num;
 
-	print_split();
+	print_split("Source IPs information");
 	printf("The device name is %s\n", ips->dev);
 	if (ips_num == 0) {
 		printf("None available source IPs\n");
@@ -90,7 +90,6 @@ void print_src_ips(const struct src_ips* ips)
 			printf("IP %d: %s\n", i, ips->ips[i]);
 		}
 	}
-	print_split();
 }
 
 
@@ -198,14 +197,15 @@ int read_responce(const int fd, const int flow_size)
 
 	while (TRUE) {
 		count = read(fd, buf, MAX_READ_BUFF);	
-		if (count == 0) {
-			perror("The connection has been closed by server.\n");
-			break;
-		} else if (count == -1) {
+
+		if (count == -1) {
 			if (errno != EAGAIN && errno != EINTR) {
 				perror("read error");
 				break;
-			}			 
+			}	
+		} else if (count == 0) {
+			perror("The connection has been closed by server.\n");
+			break;
 		} else {
 			amount += count;
 		}

@@ -19,6 +19,7 @@ struct flow_configs {
 	bool verbose;
 	char server[NI_MAXHOST];
 	unsigned int port;
+	char result_file[FILENAME_SIZE];
 };
 
 struct dst_configs {
