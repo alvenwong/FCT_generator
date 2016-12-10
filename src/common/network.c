@@ -155,9 +155,6 @@ int write_request(const int fd, const int flow_size)
 			perror("write error.");
 			error = -1;
 		}
-	} else if (count == 0) {
-		// the connection has been closed
-		error = 0;
 	} else {
 		error = count;
 	}
@@ -241,21 +238,23 @@ int write_responce(const int fd, const int flow_size)
 	int left_size = flow_size;
 	int amount = 0;
 
-	while (TRUE) {
-		if (left_size <= MAX_WRITE_BUFF) {
-			count = write_unit_responce(fd, left_size);
-			if (count <= 0) 
-				return count;
-			amount += count;
-			break;
-		} else {
+	while (left_size > 0) {
+		if (left_size > MAX_WRITE_BUFF) {
 			count = write_unit_responce(fd, MAX_WRITE_BUFF);
-			if (count <= 0) 
+		} else {
+			count = write_unit_responce(fd, left_size);
+		}
+		if (count == -1) {
+			if (errno != EAGAIN && errno != EINTR) {
+				perror("read error");
 				return count;
-			left_size -= count;
+			}			 
+		} else {
 			amount += count;
+			left_size -= count;
 		}
 	}
+
 	return amount;
 }
 
