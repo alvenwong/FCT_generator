@@ -16,6 +16,7 @@
 #include "common.h"
 #include "payload.h"
 
+#define DEBUG
 #define DEV_NAME_LEN 16
 #define MAX_IPS 16
 #define MAX_BUFF_SIZE (1 << 16)

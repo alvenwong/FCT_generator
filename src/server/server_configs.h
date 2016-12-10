@@ -13,6 +13,7 @@ struct server_configs {
 	unsigned int port;
 	bool daemon;
 	bool verbose;
+	unsigned int threads;
 };
 
 
