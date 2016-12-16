@@ -20,6 +20,8 @@ struct flow_configs {
 	char server[NI_MAXHOST];
 	unsigned int port;
 	char result_file[FILENAME_SIZE];
+	unsigned int threads;
+	unsigned int memaslap;
 };
 
 struct dst_configs {

@@ -1,6 +1,5 @@
 #include "statistics.h"
 
-
 int init_flow_time_table(struct flow_time_table *time_table, const int max_entries)
 {
 	int i;
@@ -27,12 +26,26 @@ int init_flow_time_table(struct flow_time_table *time_table, const int max_entri
 				sizeof(struct stat_result));
 		time_table->results[i].threshold = time_table->thresholds[i];
 	}
-	
+
+	time_table->error.total_flows = max_entries;
+	time_table->error.size_error = 0;
+	time_table->error.connection_error = 0;
+
 	return SUCCESS;
 }
 
 
-void del_flow_time_entry(struct flow_time_table *time_table, const int fd)
+void incre_error_flows(struct flow_time_table* time_table, const int error)
+{
+	if (error == CONNECTION_ERROR) {
+		time_table->error.connection_error += 1;
+	} else {
+		time_table->error.size_error += 1;
+	}
+}
+
+
+void del_flow_time_entry(struct flow_time_table* time_table, const int fd)
 {
 	time_table->flows_time[fd]->fd = 0;
 }
@@ -127,6 +140,12 @@ int get_group_index(const unsigned int* thres, const int flow_size)
 void print_results(struct flow_time_table *time_table)
 {
 	print_split("Flow Completion time (FCT) results");
+	if (time_table->error.size_error > 0) {
+		printf("%d flows occur size error.\n", time_table->error.size_error);
+	}
+	if (time_table->error.connection_error > 0) {
+		printf("%d flows occur connection error.\n", time_table->error.connection_error);
+	}
 	printf("%d flows among (0, 100K), average FCT is %d\n", 
 			time_table->results[0].counter,
 			time_table->results[0].avg_fct);

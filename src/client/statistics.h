@@ -10,6 +10,7 @@
 
 #define S_TO_US 1000000
 #define THRES_NUM 3
+#define CONNECTION_ERROR -1
 
 struct flow_time {
 	int fd;
@@ -28,16 +29,24 @@ struct stat_result {
 	long long int fct_tmp;
 };
 
+struct stat_error {
+	unsigned int total_flows;
+	unsigned int size_error;
+	unsigned int connection_error;
+};
+
 
 struct flow_time_table {
 	int max_entries;
 	struct flow_time** flows_time;
 	unsigned int thresholds[THRES_NUM];
 	struct stat_result results[THRES_NUM];
+	struct stat_error error;
 };
 
 
 int init_flow_time_table(struct flow_time_table *time_table, const int max_entries);
+void incre_error_flows(struct flow_time_table* time_table, const int error);
 void del_flow_time_table(struct flow_time_table *time_table);
 void del_flow_time_entry(struct flow_time_table *time_table, const int fd);
 int add_flow_time_entry(struct flow_time_table *time_table, const int fd, const int flow_size);
