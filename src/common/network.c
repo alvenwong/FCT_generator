@@ -198,11 +198,11 @@ int read_responce(const int fd, const int flow_size)
 		if (count == -1) {
 			if (errno != EAGAIN && errno != EINTR) {
 				perror("read error");
-				break;
+				return count;
 			}	
 		} else if (count == 0) {
 			perror("The connection has been closed by server.\n");
-			break;
+			return count;
 		} else {
 			amount += count;
 		}

@@ -15,6 +15,7 @@
 
 
 void print_split(const char* str);
+void string_joint(char* str1, char* str2, char* dest);
 
 unsigned char * serialize_u64(unsigned char *buffer, uint64_t value);
 unsigned char * serialize_u32(unsigned char *buffer, uint32_t value);

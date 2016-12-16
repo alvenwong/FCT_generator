@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-
 #define MAX_THREADS 64
 
 #define THREAD_IDLE 0

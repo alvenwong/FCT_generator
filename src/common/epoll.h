@@ -6,6 +6,7 @@
 #include "network.h"
 
 #define MAXEVENTS 60000
+#define PAUSE_NUM 300
 
 int create_epoll();
 int create_epoll_event(struct connection_four_tuples *conn, const int efd);

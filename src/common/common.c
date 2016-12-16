@@ -18,6 +18,13 @@ void print_split(const char* str)
 }
 
 
+void string_joint(char* str1, char* str2, char* dest)
+{
+	strcpy(dest, str1);
+	strcat(dest, str2);
+}
+
+
 unsigned char * serialize_u64(unsigned char *buffer, uint64_t value)
 {
     int bits = 8;
