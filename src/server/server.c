@@ -72,7 +72,9 @@ void* responce_thread(void* context)
 			printf("Responce %d is inconsistent with flow_size %d\n", count, flow_size);
 			close(fd);
 		}
+		//printf("thread index: %d, flow size: %d, responce: %d\n", index, flow_size, count);
 		delete_epoll_event(efd, fd);
+		close(fd);
 		poll->flag = THREAD_IDLE;
 	}
 }
