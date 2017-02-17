@@ -5,6 +5,7 @@
 
 #include "network.h"
 
+//#define DEBUG
 #define MAXEVENTS 60000
 
 int create_epoll();
