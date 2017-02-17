@@ -1,8 +1,27 @@
 #include "common.h"
 
-void print_split()
+
+void __print_split()
 {
 	printf("===========================\n");
+}
+
+
+void print_split(const char* str)
+{
+	__print_split();
+	if (strcmp(str, "") == 0) 
+		return;
+
+	printf("%s\n", str);
+	__print_split();
+}
+
+
+void string_joint(char* str1, char* str2, char* dest)
+{
+	strcpy(dest, str1);
+	strcat(dest, str2);
 }
 
 

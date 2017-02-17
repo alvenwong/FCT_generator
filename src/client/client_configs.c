@@ -41,6 +41,9 @@ void init_flow_configs(struct flow_configs* conf)
 	strcpy(conf->dev, "eth2");
 	strcpy(conf->server, "");
 	conf->port = SERVER_PORT;
+	strcpy(conf->result_file, "0");
+	conf->threads = 1;
+	conf->memaslap = 10000;
 }
 
 
@@ -49,7 +52,7 @@ void read_args(int argc, char *argv[], struct flow_configs* conf)
 	int result;
 	opterr = 0;
 
-	while ((result = getopt(argc, argv, "hvn:c:i:s:p:")) != -1) {
+	while ((result = getopt(argc, argv, "hvn:c:i:s:p:f:t:m:")) != -1) {
 		switch (result) {
 			case 'h':
 				print_usage();
@@ -72,6 +75,15 @@ void read_args(int argc, char *argv[], struct flow_configs* conf)
 			case 'p':
 				conf->port = atoi(optarg);
 				break;
+			case 'f':
+				strcpy(conf->result_file, optarg);
+				break;
+			case 't':
+				conf->threads = atoi(optarg);
+				break;
+			case 'm':
+				conf->memaslap = atoi(optarg);
+				break;
 			default:
 				print_usage();
 				break;
@@ -79,6 +91,10 @@ void read_args(int argc, char *argv[], struct flow_configs* conf)
 	}
 	if (strcmp(conf->server, "") == 0) {
 		printf("Server ip is unset\n");
+		exit(0);
+	}
+	if (conf->threads < conf->concurrent_flows) {
+		printf("Concurrency outnumbers threads!\n");
 		exit(0);
 	}
 }
@@ -118,22 +134,22 @@ void print_socket_configs(struct socket_configs* socket_conf)
 {
 	int d;
 
-	print_split();
+	print_split("Server information");
 	print_src_ips(&(socket_conf->sips));
 	for (d=0; d<socket_conf->dst_num; d++) {
-		printf("server:\n%s %u\n", 
-				socket_conf->dst_hosts[d].ip,
-				socket_conf->dst_hosts[d].port);
+		printf("Server ip: %s\n", socket_conf->dst_hosts[d].ip);
+		printf("Server port: %d\n", socket_conf->dst_hosts[d].port);
 	}
-	print_split();
 }
 
 
 void print_flow_configs(struct flow_configs *conf)
 {
-	printf("Client configuration: \n");
+	print_split("Client configuration");
 	printf("Flows: %u\n", conf->flows_num);
 	printf("Concurrent flows: %u\n", conf->concurrent_flows);
+	printf("Threads: %u\n", conf->threads);
+	printf("Memaslap: %u\n", conf->memaslap);
 	printf("Device name: %s\n", conf->dev);
 	printf("Verbose mode: %s\n", conf->verbose == false ? "False" : "True");
 }
@@ -143,9 +159,9 @@ void print_flow_configs(struct flow_configs *conf)
 void print_usage()
 {
 	printf("Usage: \n");
-	printf("-n <number>     number of flows (instead of -t)\n");
+	printf("-n <number>     number of flows\n");
 	printf("-c <number>     number of concurrent flows\n");
-	printf("-t <time>       time in seconds (instead of -n)\n");
+	printf("-t	            number of threads\n");
 	printf("-v              give more detailed output (verbose)\n");
 	printf("-i              device name\n");
 	printf("-h              display help information\n");

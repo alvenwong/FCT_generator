@@ -35,6 +35,8 @@ int create_N_epoll_events(struct connection_four_tuples *conn, const int efd, co
 	for (i=0; i<n; i++) {
 		if ((error = create_epoll_event(conn, efd)) != EXIT_FAILURE)
 			result += 1;
+		if (i % PAUSE_NUM == 0)
+			sleep(1);
 	}
 
 	return result;

@@ -80,12 +80,9 @@ void print_cdf(struct cdf_table *table)
     if (!table)
         return;
 
-	print_split();
-	printf("Cumulative Distribution Function:\n");
+	print_split("Cumulative Distribution Function");
     for (i = 0; i < table->num_entry; i++)
         printf("%.2f %.2f\n", table->entries[i].value, table->entries[i].cdf);
-	printf("Average request size: %.2f bytes\n", avg_cdf(table));
-	print_split();
 }
 
 /* get average value of CDF distribution */

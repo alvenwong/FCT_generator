@@ -3,11 +3,19 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define TRUE  1
 #define FALSE 0
 
-void print_split();
+#define SUCCESS 0
+#define FAILURE -1
+#define FILENAME_SIZE 128
+
+
+void print_split(const char* str);
+void string_joint(char* str1, char* str2, char* dest);
 
 unsigned char * serialize_u64(unsigned char *buffer, uint64_t value);
 unsigned char * serialize_u32(unsigned char *buffer, uint32_t value);
