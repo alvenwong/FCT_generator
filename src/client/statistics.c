@@ -1,5 +1,7 @@
 #include "statistics.h"
 
+char* stats_filename = "../../stats/FCT";
+
 int init_flow_time_table(struct flow_time_table *time_table, const int max_entries)
 {
 	int i;
@@ -137,8 +139,17 @@ int get_group_index(const unsigned int* thres, const int flow_size)
 }
 
 
-void print_results(struct flow_time_table *time_table)
+
+
+void print_results(struct flow_time_table *time_table, char* filename)
 {
+	int input_to_file = 1;
+	FILE *fp = NULL;
+
+	if (strcmp(filename, "") == 0) {
+		input_to_file = 0;
+	}
+
 	print_split("Flow Completion time (FCT) results");
 	if (time_table->error.size_error > 0) {
 		printf("%d flows occur size error.\n", time_table->error.size_error);
@@ -155,6 +166,31 @@ void print_results(struct flow_time_table *time_table)
 	printf("%d flows among [10M, ), average FCT is %d\n", 
 			time_table->results[2].counter,
 			time_table->results[2].avg_fct);
+
+	if (input_to_file) { 
+		if ((fp = fopen(filename, "a")) == NULL) {
+			printf("Open %s failed.\n", filename);
+			exit(EXIT_SUCCESS);
+		}
+
+		fprintf(fp, "Flow Completion time (FCT) results");
+		if (time_table->error.size_error > 0) {
+			fprintf(fp, "%d flows occur size error.\n", time_table->error.size_error);
+		}
+		if (time_table->error.connection_error > 0) {
+			fprintf(fp, "%d flows occur connection error.\n", time_table->error.connection_error);
+		}
+		fprintf(fp, "%d flows among (0, 100K), average FCT is %d\n", 
+				time_table->results[0].counter,
+				time_table->results[0].avg_fct);
+		fprintf(fp, "%d flows among [100K, 10M), average FCT is %d\n", 
+				time_table->results[1].counter,
+				time_table->results[1].avg_fct);
+		fprintf(fp, "%d flows among [10M, ), average FCT is %d\n", 
+				time_table->results[2].counter,
+				time_table->results[2].avg_fct);
+		fclose(fp);
+	}
 }
 
 
@@ -205,5 +241,5 @@ void print_statistics(struct flow_time_table *time_table, char* filename)
 		}
 	}
 	
-	print_results(time_table);
+	print_results(time_table, stats_filename);
 }

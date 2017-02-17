@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 		perror ("pthread_create");
 		exit(-1);
 	}
-
+#ifdef MEMCACHED
 	CPU_ZERO(&cpus);
 	CPU_SET(23, &cpus);
 	pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 		perror ("pthread_create");
 		exit(-1);
 	}
-
+#endif
 	pthread_exit(NULL);
 
 	cleanup();
