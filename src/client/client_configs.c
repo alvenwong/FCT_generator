@@ -161,7 +161,9 @@ void print_usage()
 	printf("Usage: \n");
 	printf("-n <number>     number of flows\n");
 	printf("-c <number>     number of concurrent flows\n");
+	printf("-m <number>     number of memcached\n");
 	printf("-t	            number of threads\n");
+	printf("-f	            result filename\n");
 	printf("-v              give more detailed output (verbose)\n");
 	printf("-i              device name\n");
 	printf("-h              display help information\n");

@@ -1,18 +1,33 @@
 #include "statistics.h"
 
-char* stats_filename = "../../stats/FCT";
+int cmp(const void *a, const void *b)
+{
+	return *(unsigned int*)a > *(unsigned int*)b;
+}
+
 
 int init_flow_time_table(struct flow_time_table *time_table, const int max_entries)
 {
 	int i;
+
 	time_table->max_entries = max_entries;
 	if ((time_table->flows_time = (struct flow_time**)calloc(max_entries, sizeof(struct flow_time*))) == NULL) {
 		free(time_table->flows_time);
 		return FAILURE;
 	}
-
 	for (i=0; i<max_entries; i++) {
 		if ((time_table->flows_time[i] = (struct flow_time*)calloc(1, sizeof(struct flow_time))) == NULL) {
+			del_flow_time_table(time_table);
+			return FAILURE;
+		}
+	}
+	
+	if ((time_table->flows_fct = (unsigned int**)calloc(THRES_NUM, sizeof(unsigned int*))) == NULL) {
+		del_flow_time_table(time_table);
+		return FAILURE;
+	}
+	for (i=0; i<THRES_NUM; i++) {
+		if ((time_table->flows_fct[i] = (unsigned int*)calloc(max_entries, sizeof(unsigned int))) == NULL) {
 			del_flow_time_table(time_table);
 			return FAILURE;
 		}
@@ -72,6 +87,11 @@ void del_flow_time_table(struct flow_time_table *time_table)
 	}
 
 	free(time_table->flows_time);
+
+	for (i=0; i<THRES_NUM; i++) {
+		free(time_table->flows_fct[i]);
+	}
+	free(time_table->flows_fct);
 }
 
 
@@ -173,33 +193,37 @@ void print_results(struct flow_time_table *time_table, char* filename)
 			exit(EXIT_SUCCESS);
 		}
 
-		fprintf(fp, "Flow Completion time (FCT) results");
+		fprintf(fp, "Flow Completion time (FCT) results\n");
 		if (time_table->error.size_error > 0) {
 			fprintf(fp, "%d flows occur size error.\n", time_table->error.size_error);
 		}
 		if (time_table->error.connection_error > 0) {
 			fprintf(fp, "%d flows occur connection error.\n", time_table->error.connection_error);
 		}
-		fprintf(fp, "%d flows among (0, 100K), average FCT is %d\n", 
+		fprintf(fp, "%d flows among (0, 100K), average FCT is %d, 99th FCT is %d\n", 
 				time_table->results[0].counter,
-				time_table->results[0].avg_fct);
-		fprintf(fp, "%d flows among [100K, 10M), average FCT is %d\n", 
+				time_table->results[0].avg_fct,
+				time_table->flows_fct[0][(int)(time_table->results[0].counter * 0.99)]);
+		fprintf(fp, "%d flows among [100K, 10M), average FCT is %d, 99th FCT is %d\n", 
 				time_table->results[1].counter,
-				time_table->results[1].avg_fct);
-		fprintf(fp, "%d flows among [10M, ), average FCT is %d\n", 
+				time_table->results[1].avg_fct,
+				time_table->flows_fct[1][(int)(time_table->results[1].counter * 0.99)]);
+		fprintf(fp, "%d flows among [10M, ), average FCT is %d, 99th FCT is %d\n\n", 
 				time_table->results[2].counter,
-				time_table->results[2].avg_fct);
+				time_table->results[2].avg_fct,
+				time_table->flows_fct[2][(int)(time_table->results[2].counter * 0.99)]);
 		fclose(fp);
 	}
 }
 
 
-void print_statistics(struct flow_time_table *time_table, char* filename)
+void print_statistics(struct flow_time_table *time_table, char* filename, char* stats_filename)
 {
 	int entries = time_table->max_entries;
 	int i, count;
 	int verbose = 0;
-	int flow_size, fct, index;
+	int flow_size, fct;
+	int index = 0;
 	FILE *fp = NULL;
 
 	if (strcmp(filename, "") == 0) {
@@ -225,6 +249,8 @@ void print_statistics(struct flow_time_table *time_table, char* filename)
 		}
 
 		index = get_group_index(time_table->thresholds, flow_size);
+
+		time_table->flows_fct[index][time_table->results[index].counter] = fct;
 		time_table->results[index].counter += 1;
 		time_table->results[index].flow_size_tmp += flow_size;
 		time_table->results[index].fct_tmp += fct;
@@ -239,6 +265,8 @@ void print_statistics(struct flow_time_table *time_table, char* filename)
 			result->avg_flow_size = result->flow_size_tmp / result->counter;
 			result->avg_fct = result->fct_tmp / result->counter;
 		}
+
+		qsort(time_table->flows_fct[i], time_table->results[i].counter, sizeof(unsigned int), cmp);
 	}
 	
 	print_results(time_table, stats_filename);

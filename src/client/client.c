@@ -10,6 +10,7 @@ int get_flow_size()
 
 void del_flow(const int efd, const int fd)
 {
+	fprintf(stderr, "del flow\n");
 	delete_epoll_event(efd, fd);
 	close(fd);
 	del_flow_time_entry(&time_table, fd);
@@ -47,13 +48,14 @@ void* epoll_client(void* context)
 
 	events = calloc(MAXEVENTS, sizeof(struct epoll_event));
 	while (left_flows > 0) {
-		if (!memaslap && left_flows < flows_num * 0.7) {
+#ifdef MEMCACHED 
+		if (!memaslap && left_flows < flows_num * 0.8) {
 			memaslap = true;
 		}
-
+#endif
 		nfds = epoll_wait(efd, events, MAXEVENTS, 0);
 		for (i=0; i<nfds; i++) {
-			int fd;
+			int fd, error;
 			int flow_size;
 			fd = events[i].data.fd;
 			if ((events[i].events & EPOLLERR) ||
@@ -61,11 +63,10 @@ void* epoll_client(void* context)
 				del_flow(efd, fd);
 				continue;
 			} else if (events[i].events & EPOLLOUT) {
-				int error;
 				if (active_flows < concurrent_flows) {	
 					flow_size = get_flow_size();
 					flows_size[fd] = flow_size;
-					write_request(fd, flow_size);
+					error = write_request(fd, flow_size);
 					if ((error = modify_epoll_event(efd, fd, EPOLLIN)) < 0) {
 						perror ("modify_epoll_event");
 						del_flow(efd, fd);
@@ -88,7 +89,8 @@ void* epoll_client(void* context)
 	free(events);
 
 	string_joint(result_filename_base, flow_conf.result_file, result_filename);
-	print_statistics(&time_table, result_filename);
+	string_joint(stats_filename_base, flow_conf.result_file, stats_filename);
+	print_statistics(&time_table, result_filename, stats_filename);
 	kill = true;
 
 	exit(EXIT_SUCCESS);
@@ -143,7 +145,10 @@ int main(int argc, char *argv[])
 	int i, rc;
 	int memaslap_num, threads_num;
 	int index[MAX_THREADS];
-	pthread_t req_threads[MAX_THREADS], epoll_thread, shell_thread;
+	pthread_t req_threads[MAX_THREADS], epoll_thread;
+#ifdef MEMCACHED
+	pthread_t shell_thread;
+#endif
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	cpu_set_t cpus;

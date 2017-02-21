@@ -39,6 +39,7 @@ struct stat_error {
 struct flow_time_table {
 	int max_entries;
 	struct flow_time** flows_time;
+	unsigned int **flows_fct;
 	unsigned int thresholds[THRES_NUM];
 	struct stat_result results[THRES_NUM];
 	struct stat_error error;
@@ -54,8 +55,7 @@ void set_req_time(struct flow_time_table *time_table, const int fd);
 int get_time_diff(struct timeval *start, struct timeval *end);
 void set_resp_time(struct flow_time_table *time_table, const int fd);
 int set_flow_time_flowsize(struct flow_time_table *time_table, const int fd, const int flow_size);
-void print_statistics(struct flow_time_table *time_table, char* filename);
+void print_statistics(struct flow_time_table *time_table, char* results_filename, char* stats_filename);
 
 
 #endif
-

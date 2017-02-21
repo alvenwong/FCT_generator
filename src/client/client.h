@@ -18,6 +18,7 @@
 #include "cdf.h"
 #include "statistics.h"
 
+#define MEMCACHED
 #define MAX_FLOWS 65536
 #define BACKUP    64
 
@@ -48,7 +49,7 @@ bool memaslap = false;
 bool verbose_mode = false;
 char cdf_filename[] = "conf/cdf"; 
 char result_filename_base[] = "result/flowsize_fct_";
-char result_filename[FILENAME_SIZE];
-
+char stats_filename_base[] = "stats/FCT_";
+char result_filename[FILENAME_SIZE], stats_filename[FILENAME_SIZE];
 
 #endif
