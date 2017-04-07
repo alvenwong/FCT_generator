@@ -1,1 +1,2 @@
-# generator
+# Project Description
+This project is to implement a simple traffic generator with EPOLL. It consists of two components: a client and a server. The client establishs a number of TCP flows with the server. And then a fixed number of connections send requests to the server, requiring responces with specific sizes. After receiving the responce, the flow will be closed by the client. The generator ensure that the number of concurrent flows transmitting data is fixed.
