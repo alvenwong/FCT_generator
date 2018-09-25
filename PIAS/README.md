@@ -1,5 +1,9 @@
 ## Description
 
+PIAS is a project targeting at minimizing flow completion times (FCT) for commodity data centers.<p>
+<b>Information-Agnostic Flow Scheduling for Commodity Data Centers</b>, USENIX NSDI 2015<p>
+Wei Bai, Li Chen, Kai Chen, Dongsu Han, Chen Tian, Hao Wang <p>
+
 The kernel module of PIAS (<strong>P</strong>ractical <strong>I</strong>nformation-<strong>A</strong>gnostic flow <strong>S</strong>cheduling). The kernel module matains the per-flow state (`flow.h` and `flow.c`) and marks packets with different priorities (DSCP) (`network.h` and `network.c`).
 
 ## Compiling
