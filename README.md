@@ -1,5 +1,5 @@
 # Project Description
-This project is to implement a simple traffic generator with EPOLL. It consists of two components: a client and a server. The client establishs a number of TCP flows with the server. And then a fixed number of connections send requests to the server, requiring responces with specific sizes. After receiving the responce, the flow will be closed by the client. The generator ensures that the number of concurrent flows transmitting data is fixed.
+This project is a simple traffic generator with EPOLL for Panda. It consists of two components: a client and a server. The client establishs a number of TCP flows with the server. And then a fixed number of connections send requests to the server, requiring responces with specific sizes. After receiving the responce, the flow will be closed by the client. The generator ensures that the number of concurrent flows transmitting data is fixed. <p>
 
 # Folders Description
 ## conf
